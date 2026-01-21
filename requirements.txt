@@ -1,0 +1,10 @@
+# Dependencies for the project
+ultralytics
+roboflow
+supervision
+numpy
+pandas
+opencv-python
+matplotlib
+opencv
+gradio
