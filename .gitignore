@@ -51,6 +51,7 @@ data/
 *.jpg
 *.jpeg
 *.png
+!assets/*.png
 .env
 
 # OS

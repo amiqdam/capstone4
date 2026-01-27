@@ -104,6 +104,9 @@ class ASLVideoProcessor(VideoProcessorBase):
         self.last_letter = None
         self.letter_start_time = None
         self.letter_appended = False
+        self.frame_count = 0
+        self.skip_frames = 3  # Process every 3rd frame for performance
+        self.last_result_img = None
     
     def recv(self, frame):
         img = frame.to_ndarray(format="bgr24")
@@ -111,7 +114,15 @@ class ASLVideoProcessor(VideoProcessorBase):
         if detector is None or classifier is None:
             return av.VideoFrame.from_ndarray(img, format="bgr24")
         
-        img = cv2.resize(img, (640, 480))
+        # Lower resolution for faster processing (320x240 instead of 640x480)
+        img = cv2.resize(img, (320, 240))
+        
+        # Skip frames for performance - return last result if skipping
+        self.frame_count += 1
+        if self.frame_count % self.skip_frames != 0:
+            if self.last_result_img is not None:
+                return av.VideoFrame.from_ndarray(self.last_result_img, format="bgr24")
+            return av.VideoFrame.from_ndarray(img, format="bgr24")
         
         # Detect hands
         results = detector(img, verbose=False)[0]
@@ -159,9 +170,9 @@ class ASLVideoProcessor(VideoProcessorBase):
             sentence_mode = self.shared_state.get_sentence_mode()
             
             if detected_letter:
-                # Draw large letter in corner
-                cv2.putText(img, detected_letter, (20, 80), 
-                           cv2.FONT_HERSHEY_SIMPLEX, 3, (0, 255, 0), 5)
+                # Draw large letter in corner (scaled for 320x240)
+                cv2.putText(img, detected_letter, (10, 40), 
+                           cv2.FONT_HERSHEY_SIMPLEX, 1.5, (0, 255, 0), 3)
                 
                 if sentence_mode:
                     # Same letter being held
@@ -170,20 +181,20 @@ class ASLVideoProcessor(VideoProcessorBase):
                             elapsed = current_time - self.letter_start_time
                             hold_progress = min(elapsed / hold_time, 1.0)
                             
-                            # Draw progress bar on video
-                            bar_width = int(300 * hold_progress)
-                            cv2.rectangle(img, (170, 60), (470, 80), (100, 100, 100), -1)
-                            cv2.rectangle(img, (170, 60), (170 + bar_width, 80), (0, 255, 0), -1)
-                            cv2.putText(img, f"Hold: {elapsed:.1f}s / {hold_time:.1f}s", 
-                                       (170, 55), cv2.FONT_HERSHEY_SIMPLEX, 0.5, (255, 255, 255), 1)
+                            # Draw progress bar on video (scaled for 320x240)
+                            bar_width = int(150 * hold_progress)
+                            cv2.rectangle(img, (85, 30), (235, 45), (100, 100, 100), -1)
+                            cv2.rectangle(img, (85, 30), (85 + bar_width, 45), (0, 255, 0), -1)
+                            cv2.putText(img, f"{elapsed:.1f}s/{hold_time:.0f}s", 
+                                       (85, 25), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1)
                             
                             # Append letter when hold time reached
                             if elapsed >= hold_time and not self.letter_appended:
                                 self.shared_state.append_to_sentence(detected_letter)
                                 self.letter_appended = True
                                 # Visual feedback
-                                cv2.putText(img, "ADDED!", (500, 80), 
-                                           cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 255, 255), 2)
+                                cv2.putText(img, "ADDED!", (250, 40), 
+                                           cv2.FONT_HERSHEY_SIMPLEX, 0.6, (0, 255, 255), 2)
                     else:
                         # New letter - reset timer
                         self.last_letter = detected_letter
@@ -200,6 +211,8 @@ class ASLVideoProcessor(VideoProcessorBase):
             # Update shared state
             self.shared_state.update_detection(detected_letter, detected_conf, hold_progress)
         
+        # Save this frame as last result for frame skipping
+        self.last_result_img = img.copy()
         return av.VideoFrame.from_ndarray(img, format="bgr24")
 
 
@@ -373,7 +386,7 @@ with right_col:
 with st.expander("📖 ASL Reference Dictionary"):
     st.markdown("### American Sign Language Alphabet")
     st.image(
-        "https://www.researchgate.net/publication/361617307/figure/fig1/AS:11431281102848931@1669546863211/American-Sign-Language-ASL.png",
+        "assets/asl_alphabet.png",
         caption="American Sign Language (ASL) Alphabet Reference",
         width=500
     )
