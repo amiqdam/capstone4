@@ -85,8 +85,6 @@ cv2.destroyAllWindows()
 
 
 
-
-
 # # Gradio UI
 # model = YOLO("exported_models/handsign_cls_best.pt")
 # cap = cv2.VideoCapture(0)

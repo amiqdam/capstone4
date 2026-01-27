@@ -2,9 +2,10 @@
 ultralytics
 roboflow
 supervision
-numpy
+numpy<2.0
 pandas
 opencv-python
 matplotlib
-opencv
-gradio
+streamlit
+streamlit-webrtc
+av
