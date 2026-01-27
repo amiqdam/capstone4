@@ -234,17 +234,19 @@ def detect_from_image(image):
     results = detector(frame, verbose=False)[0]
     detections = sv.Detections.from_ultralytics(results)
     
-    CONFIDENCE_THRESHOLD = 0.5
+    CONFIDENCE_THRESHOLD = 0.3  # Lower threshold for uploaded images
     detected_letter = None
     detected_conf = 0.0
+    
+    # Debug: show number of detections
+    num_detections = len(detections)
     
     for xyxy, mask, confidence, class_id, tracker_id, data in detections:
         if confidence < CONFIDENCE_THRESHOLD:
             continue
         
         left, top, right, bottom = map(int, xyxy)
-        if top < frame.shape[0] * 0.3:
-            continue
+        # Removed top 30% filter for uploaded images - only applies to webcam
         
         hand_crop = frame[top:bottom, left:right]
         
@@ -262,11 +264,12 @@ def detect_from_image(image):
             cv2.putText(frame, f"{class_name} ({class_conf:.2f})", 
                        (left, max(top - 10, 15)), cv2.FONT_HERSHEY_SIMPLEX, 
                        0.7, (0, 255, 0), 2)
-        except:
-            pass
+        except Exception as e:
+            # Draw detection box even if classification fails
+            cv2.rectangle(frame, (left, top), (right, bottom), (0, 0, 255), 2)
     
     result_image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-    return Image.fromarray(result_image), detected_letter, detected_conf
+    return Image.fromarray(result_image), detected_letter, detected_conf, num_detections
 
 
 # Header
@@ -310,13 +313,17 @@ with left_col:
             input_image = Image.open(uploaded_file)
             st.image(input_image, caption="Input Image", use_column_width=True)
             
-            result_img, letter, confidence = detect_from_image(input_image)
+            result_img, letter, confidence, num_detections = detect_from_image(input_image)
+            
+            st.caption(f"🔍 Found {num_detections} hand detection(s)")
             
             if result_img:
                 st.image(result_img, caption="Detection Result", use_column_width=True)
             
             if letter:
                 st.success(f"Detected: **{letter}** ({confidence:.1%})")
+            elif num_detections == 0:
+                st.warning("No hands detected in the image. Try an image with a clearer hand sign.")
 
 # Right Column: Output
 with right_col:
