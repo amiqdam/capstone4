@@ -8,4 +8,6 @@ opencv-python
 matplotlib
 streamlit
 streamlit-webrtc
+streamlit-autorefresh
 av
+altair<5
