@@ -81,38 +81,3 @@ while True:
 
 cap.release()
 cv2.destroyAllWindows()
-
-
-
-
-# # Gradio UI
-# model = YOLO("exported_models/handsign_cls_best.pt")
-# cap = cv2.VideoCapture(0)
-
-# while True:
-#     ret, frame = cap.read()
-#     if not ret:
-#         break
-
-#     res = model(frame, imgsz=224)[0]
-#     probs = res.probs
-
-#     label = model.names[probs.top1]
-#     conf = probs.top1conf.item()
-
-#     cv2.putText(
-#         frame,
-#         f"{label} ({conf:.2f})",
-#         (20, 40),
-#         cv2.FONT_HERSHEY_SIMPLEX,
-#         1,
-#         (0, 255, 0),
-#         2
-#     )
-
-#     cv2.imshow("Hand Sign Classification", frame)
-#     if cv2.waitKey(1) & 0xFF == ord("q"):
-#         break
-
-# cap.release()
-# cv2.destroyAllWindows()
