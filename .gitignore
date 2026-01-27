@@ -38,10 +38,10 @@ wheels/
 .ipynb_checkpoints/
 *.ipynb_checkpoints
 
-# Model files and runs (too large for GitHub)
-runs/
-*.pt
-*.pth
+# Model files and runs (allow trained models in runs/)
+# runs/  # Commented out - need to push trained models for deployment
+# *.pt   # Commented out - need to push trained models for deployment
+# *.pth
 yolov8*.pt
 exported_models/
 
