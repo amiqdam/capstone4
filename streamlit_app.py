@@ -308,12 +308,12 @@ with left_col:
         uploaded_file = st.file_uploader("Upload image", type=["jpg", "jpeg", "png"])
         if uploaded_file:
             input_image = Image.open(uploaded_file)
-            st.image(input_image, caption="Input Image", use_container_width=True)
+            st.image(input_image, caption="Input Image", use_column_width=True)
             
             result_img, letter, confidence = detect_from_image(input_image)
             
             if result_img:
-                st.image(result_img, caption="Detection Result", use_container_width=True)
+                st.image(result_img, caption="Detection Result", use_column_width=True)
             
             if letter:
                 st.success(f"Detected: **{letter}** ({confidence:.1%})")
