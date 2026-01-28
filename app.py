@@ -6,7 +6,7 @@ from ultralytics import YOLO
 
 # Load best models
 detector = YOLO("runs/detect/model_2/weights/best.pt")
-classifier = YOLO("runs/classify/cls_model_3/weights/best.pt")
+classifier = YOLO("runs/classify/cls_model_2/weights/best.pt")
 
 # Activate the webcamera
 cap = cv2.VideoCapture(0)
